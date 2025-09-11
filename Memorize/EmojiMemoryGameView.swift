@@ -8,90 +8,85 @@
 import SwiftUI
 
 struct EmojiMemoryGameView: View {
-    var viewModel: EmojiMemoryGame
+    @ObservedObject var viewModel: EmojiMemoryGame
     
-    static let animalCards = ["🐶", "🐶", "🐱", "🐱", "🐻", "🐻", "🦊", "🦊", "🐼", "🐼", "🐸", "🐸"]
-    static let fruitCards = ["🍎", "🍎", "🍌", "🍌", "🍇", "🍇", "🍓", "🍓", "🍒", "🍒", "🍍", "🍍"]
-    static let spaceCards = ["🚀", "🚀", "🛸", "🛸", "🌌", "🌌", "🪐", "🪐", "🌙", "🌙", "☄️", "☄️"]
-
-    let cardThemes: [CardTheme] = [
-        CardTheme(name: "Animals 🐾", cards: EmojiMemoryGameView.animalCards, colorTheme: .orange),
-        CardTheme(name: "Fruits 🍎", cards: EmojiMemoryGameView.fruitCards, colorTheme: .red),
-        CardTheme(name: "Space 🚀", cards: EmojiMemoryGameView.spaceCards, colorTheme: .indigo)
-    ]
-
     @State private var selectedThemeIndex = 0
-    @State private var shuffledCards: [String] = []
-    @State private var cardsColor: Color = .orange
-
+    
     var body: some View {
         VStack {
             Text("Memorize").font(.largeTitle)
-
             ScrollView {
                 cards
             }
-
-            Picker("Select a theme", selection: $selectedThemeIndex) {
-                ForEach(0..<cardThemes.count, id: \.self) { index in
-                    Text(cardThemes[index].name).tag(index)
+            HStack {
+                Picker("Select a theme", selection: $selectedThemeIndex) {
+                    ForEach(0..<viewModel.cardThemes.count, id: \.self) { index in
+                        Text(viewModel.cardThemes[index].name).tag(index)
+                    }
                 }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                Spacer()
+                Button(action: {
+                    viewModel.shuffle()
+                }, label: {
+                    Image(systemName: "rectangle.2.swap")
+                })
+                .imageScale(.large)
+                .font(.title3)
             }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
+            .padding([.leading, .trailing])
         }
         .padding([.leading, .trailing])
-        .onAppear {
-            shuffledCards = cardThemes[selectedThemeIndex].cards.shuffled()
+        .padding([.bottom, .top], 0)
+        .onAppear() {
+            viewModel.shuffle()
         }
-        .onChange(of: selectedThemeIndex) { oldValue, newValue in
-            shuffledCards = cardThemes[newValue].cards.shuffled()
-            cardsColor = cardThemes[newValue].colorTheme
+        .onChange(of: selectedThemeIndex) { oldIndex, newIndex in
+            viewModel.switchTheme(newIndex)
         }
     }
 
     var cards: some View {
         LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 90), spacing: 8)],
-            spacing: 8
+            columns: [GridItem(.adaptive(minimum: 85), spacing: 0)],
+            spacing: 0
         ) {
-            ForEach(0..<shuffledCards.count, id: \.self) { index in
-                CardView(content: shuffledCards[index])
+            ForEach(viewModel.cards.indices, id: \.self) { index in
+                CardView(viewModel.cards[index])
                     .aspectRatio(2 / 3, contentMode: .fit)
+                    .padding(4)
             }
         }
-        .foregroundColor(cardsColor)
+        .foregroundColor(.orange)
     }
 }
 
 struct CardView: View {
-    let content: String
-    @State var isFaceUp = false
+    let card: MemoryGame<String>.Card
     
+    init(_ card: MemoryGame<String>.Card) {
+        self.card = card
+    }
+
     var body: some View {
         ZStack {
             let base = RoundedRectangle(cornerRadius: 12)
             Group {
                 base.fill(.white)
                 base.strokeBorder(lineWidth: 2)
-                Text(content).font(.largeTitle)
+                Text(card.content)
+                    .font(.system(size: 200))
+                    .minimumScaleFactor(0.01)
+                    .aspectRatio(1, contentMode: .fit)
             }
-            .opacity(isFaceUp ? 1 : 0)
-            base.fill().opacity(isFaceUp ? 0 : 1)
-        }
-        .onTapGesture {
-            isFaceUp.toggle()
+            .opacity(card.isFaceUp ? 1 : 0)
+            base.fill().opacity(card.isFaceUp ? 0 : 1)
         }
     }
 }
 
-struct CardTheme {
-    let name: String
-    let cards: [String]
-    let colorTheme: Color
-}
-
 #Preview {
-    EmojiMemoryGameView()
+    EmojiMemoryGameView(viewModel: EmojiMemoryGame())
 }
