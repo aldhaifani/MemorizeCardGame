@@ -9,7 +9,6 @@ import SwiftUI
 
 struct EmojiMemoryGameView: View {
     @ObservedObject var viewModel: EmojiMemoryGame
-    
     @State private var selectedThemeIndex = 0
     
     var body: some View {
@@ -17,6 +16,7 @@ struct EmojiMemoryGameView: View {
             Text("Memorize").font(.largeTitle)
             ScrollView {
                 cards
+                    .animation(.snappy, value: viewModel.cards)
             }
             HStack {
                 Picker("Select a theme", selection: $selectedThemeIndex) {
@@ -53,13 +53,16 @@ struct EmojiMemoryGameView: View {
             columns: [GridItem(.adaptive(minimum: 85), spacing: 0)],
             spacing: 0
         ) {
-            ForEach(viewModel.cards.indices, id: \.self) { index in
-                CardView(viewModel.cards[index])
+            ForEach(viewModel.cards) { card in
+                CardView(card)
                     .aspectRatio(2 / 3, contentMode: .fit)
                     .padding(4)
+                    .onTapGesture {
+                        viewModel.choose(card)
+                    }
             }
         }
-        .foregroundColor(.orange)
+        .foregroundColor(viewModel.getThemeColor(selectedThemeIndex))
     }
 }
 
@@ -84,6 +87,7 @@ struct CardView: View {
             .opacity(card.isFaceUp ? 1 : 0)
             base.fill().opacity(card.isFaceUp ? 0 : 1)
         }
+        .opacity(card.isFaceUp || !card.isMatched ? 1 : 0)
     }
 }
 

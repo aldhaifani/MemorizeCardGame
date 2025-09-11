@@ -10,6 +10,7 @@ import SwiftUI
 struct CardTheme {
     let name: String
     let emojis: [String]
+    let color: Color
 }
 
 class EmojiMemoryGame: ObservableObject {
@@ -18,16 +19,16 @@ class EmojiMemoryGame: ObservableObject {
     private static let emojisSpace  = ["🌍","🪐","☀️","🌑","🌒","🌓","🌕","🌙","⭐","💫","☄️","🚀","🛰️","🛸"]
 
     let cardThemes: [CardTheme] = [
-        CardTheme(name: "Animals 🐾", emojis: emojisAnimals),
-        CardTheme(name: "Fruit 🍎", emojis: emojisFruits),
-        CardTheme(name: "Space 🚀",  emojis: emojisSpace)
+        CardTheme(name: "Animals 🐾", emojis: emojisAnimals, color: .orange),
+        CardTheme(name: "Fruit 🍎", emojis: emojisFruits, color: .red),
+        CardTheme(name: "Space 🚀",  emojis: emojisSpace, color: .cyan)
     ]
 
     @Published private var selectedEmojis: [String] = EmojiMemoryGame.emojisAnimals
     @Published private var model: MemoryGame<String> = EmojiMemoryGame.createMemoryGame(with: EmojiMemoryGame.emojisAnimals)
 
     private static func createMemoryGame(with emojis: [String]) -> MemoryGame<String> {
-        MemoryGame<String>(numberOfPairsOfCards: 12) { pairIndex in
+        MemoryGame<String>(numberOfPairsOfCards: 8) { pairIndex in
             if emojis.indices.contains(pairIndex) {
                 return emojis[pairIndex]
             } else {
@@ -38,6 +39,10 @@ class EmojiMemoryGame: ObservableObject {
 
     var cards: Array<MemoryGame<String>.Card> {
         model.cards
+    }
+    
+    func getThemeColor(_ index: Int) -> Color {
+        cardThemes[index].color
     }
 
     // MARK: - Intents

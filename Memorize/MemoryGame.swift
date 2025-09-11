@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MemoryGame<CardContent> {
+struct MemoryGame<CardContent> where CardContent: Equatable {
     private(set) var cards: Array<Card>
 
     init(numberOfPairsOfCards: Int, cardContentFactory: (Int) -> CardContent) {
@@ -15,23 +15,47 @@ struct MemoryGame<CardContent> {
         // add numberOfPairsOfCards x 2 cards
         for pairsIndex in 0..<max(2, numberOfPairsOfCards) {
             let content = cardContentFactory(pairsIndex)
-            cards.append(Card(content: content))
-            cards.append(Card(content: content))
+            cards.append(Card(content: content, id: "\(pairsIndex+1)a"))
+            cards.append(Card(content: content, id: "\(pairsIndex+1)b"))
         }
     }
 
-    func choose(_ card: Card) {
-        
-    }
-    
-    mutating func shuffle() {
-        cards.shuffle()
-        print(cards)
+    var indexOfTheOneAndOnlyFaceUpCard: Int? {
+        get { cards.indices.filter { index in cards[index].isFaceUp }.only }
+        set { cards.indices.forEach { cards[$0].isFaceUp = (newValue == $0) } }
     }
 
-    struct Card {
-        var isFaceUp = true
+    mutating func choose(_ card: Card) {
+        if let chosenIndex = cards.firstIndex(where: { $0.id == card.id }) {
+            if !cards[chosenIndex].isFaceUp && !cards[chosenIndex].isMatched {
+                if let potentialMatchIndex = indexOfTheOneAndOnlyFaceUpCard {
+                    if cards[chosenIndex].content == cards[potentialMatchIndex].content {
+                        cards[chosenIndex].isMatched = true
+                        cards[potentialMatchIndex].isMatched = true
+                    }
+                } else {
+                    indexOfTheOneAndOnlyFaceUpCard = chosenIndex
+                }
+                cards[chosenIndex].isFaceUp = true
+            }
+        }
+    }
+
+    mutating func shuffle() {
+        cards.shuffle()
+    }
+
+    struct Card: Equatable, Identifiable {
+        var isFaceUp = false
         var isMatched = false
         let content: CardContent
+        
+        var id: String
+    }
+}
+
+extension Array {
+    var only: Element? {
+        count == 1 ? first : nil
     }
 }
