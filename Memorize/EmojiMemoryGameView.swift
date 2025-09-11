@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  EmojiMemoryGameView.swift
 //  Memorize
 //
 //  Created by Tareq Aldhaifani on 10/09/2025.
@@ -7,15 +7,17 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct EmojiMemoryGameView: View {
+    var viewModel: EmojiMemoryGame
+    
     static let animalCards = ["🐶", "🐶", "🐱", "🐱", "🐻", "🐻", "🦊", "🦊", "🐼", "🐼", "🐸", "🐸"]
     static let fruitCards = ["🍎", "🍎", "🍌", "🍌", "🍇", "🍇", "🍓", "🍓", "🍒", "🍒", "🍍", "🍍"]
     static let spaceCards = ["🚀", "🚀", "🛸", "🛸", "🌌", "🌌", "🪐", "🪐", "🌙", "🌙", "☄️", "☄️"]
 
     let cardThemes: [CardTheme] = [
-        CardTheme(name: "Animals 🐾", cards: ContentView.animalCards, colorTheme: .orange),
-        CardTheme(name: "Fruits 🍎", cards: ContentView.fruitCards, colorTheme: .red),
-        CardTheme(name: "Space 🚀", cards: ContentView.spaceCards, colorTheme: .indigo)
+        CardTheme(name: "Animals 🐾", cards: EmojiMemoryGameView.animalCards, colorTheme: .orange),
+        CardTheme(name: "Fruits 🍎", cards: EmojiMemoryGameView.fruitCards, colorTheme: .red),
+        CardTheme(name: "Space 🚀", cards: EmojiMemoryGameView.spaceCards, colorTheme: .indigo)
     ]
 
     @State private var selectedThemeIndex = 0
@@ -91,5 +93,5 @@ struct CardTheme {
 }
 
 #Preview {
-    ContentView()
+    EmojiMemoryGameView()
 }
